@@ -1,4 +1,7 @@
 import torch
+# Issues related to pytorch
+# https://github.com/LeeJunHyun/Image_Segmentation/issues/58
+# https://github.com/LeeJunHyun/Image_Segmentation/issues/63
 
 # SR : Segmentation Result
 # GT : Ground Truth
@@ -22,6 +25,10 @@ def get_sensitivity(SR,GT,threshold=0.5):
     TP = ((SR==1)+(GT==1))==2
     FN = ((SR==0)+(GT==1))==2
 
+    # ISSUE https://github.com/LeeJunHyun/Image_Segmentation/issues/58
+    TP = ((SR==1).byte()+(GT==1).byte())==2 
+    FN = ((SR==0).byte()+(GT==1).byte())==2
+
     SE = float(torch.sum(TP))/(float(torch.sum(TP+FN)) + 1e-6)     
     
     return SE
@@ -35,6 +42,10 @@ def get_specificity(SR,GT,threshold=0.5):
     TN = ((SR==0)+(GT==0))==2
     FP = ((SR==1)+(GT==0))==2
 
+    # ISSUE https://github.com/LeeJunHyun/Image_Segmentation/issues/58
+    TN = ((SR==0).byte()+(GT==0).byte())==2 
+    FP = ((SR==1).byte()+(GT==0).byte())==2
+
     SP = float(torch.sum(TN))/(float(torch.sum(TN+FP)) + 1e-6)
     
     return SP
@@ -47,6 +58,11 @@ def get_precision(SR,GT,threshold=0.5):
     # FP : False Positive
     TP = ((SR==1)+(GT==1))==2
     FP = ((SR==1)+(GT==0))==2
+
+    # ISSUE https://github.com/LeeJunHyun/Image_Segmentation/issues/58
+    TP = ((SR==1).byte()+(GT==1).byte())==2 
+    FP = ((SR==1).byte()+(GT==0).byte())==2
+
 
     PC = float(torch.sum(TP))/(float(torch.sum(TP+FP)) + 1e-6)
 
@@ -69,6 +85,10 @@ def get_JS(SR,GT,threshold=0.5):
     Inter = torch.sum((SR+GT)==2)
     Union = torch.sum((SR+GT)>=1)
     
+    # ISSUE https://github.com/LeeJunHyun/Image_Segmentation/issues/58
+    Inter=torch.sum((SR.byte()+GT.byte())==2)
+    Union=torch.sum((SR.byte()+GT.byte())>=1)
+
     JS = float(Inter)/(float(Union) + 1e-6)
     
     return JS
@@ -79,6 +99,9 @@ def get_DC(SR,GT,threshold=0.5):
     GT = GT == torch.max(GT)
 
     Inter = torch.sum((SR+GT)==2)
+    # ISSUE https://github.com/LeeJunHyun/Image_Segmentation/issues/58
+    Inter=torch.sum((SR.byte()+GT.byte())==2)
+
     DC = float(2*Inter)/(float(torch.sum(SR)+torch.sum(GT)) + 1e-6)
 
     return DC

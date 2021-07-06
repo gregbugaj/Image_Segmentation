@@ -138,8 +138,9 @@ class Solver(object):
 				length = 0
 
 				for i, (images, GT) in enumerate(self.train_loader):
+					# print('************ SIZE *************')
+					# print(images.size())
 					# GT : Ground Truth
-
 					images = images.to(self.device)
 					GT = GT.to(self.device)
 
@@ -147,8 +148,13 @@ class Solver(object):
 					SR = self.unet(images)
 					SR_probs = F.sigmoid(SR)
 					SR_flat = SR_probs.view(SR_probs.size(0),-1)
-
 					GT_flat = GT.view(GT.size(0),-1)
+
+					# print(f'GT : {GT.size()}')
+					# print(f'SR : {SR.size()}')
+					# print(f'GTF : {GT_flat.size()}')
+					# print(f'SRF : {SR_flat.size()}')
+					
 					loss = self.criterion(SR_flat,GT_flat)
 					epoch_loss += loss.item()
 
@@ -179,8 +185,6 @@ class Solver(object):
 					  epoch+1, self.num_epochs, \
 					  epoch_loss,\
 					  acc,SE,SP,PC,F1,JS,DC))
-
-			
 
 				# Decay learning rate
 				if (epoch+1) > (self.num_epochs - self.num_epochs_decay):
@@ -228,7 +232,6 @@ class Solver(object):
 
 				print('[Validation] Acc: %.4f, SE: %.4f, SP: %.4f, PC: %.4f, F1: %.4f, JS: %.4f, DC: %.4f'%(acc,SE,SP,PC,F1,JS,DC))
 				
-				'''
 				torchvision.utils.save_image(images.data.cpu(),
 											os.path.join(self.result_path,
 														'%s_valid_%d_image.png'%(self.model_type,epoch+1)))
@@ -238,8 +241,6 @@ class Solver(object):
 				torchvision.utils.save_image(GT.data.cpu(),
 											os.path.join(self.result_path,
 														'%s_valid_%d_GT.png'%(self.model_type,epoch+1)))
-				'''
-
 
 				# Save Best U-Net model
 				if unet_score > best_unet_score:
@@ -289,7 +290,6 @@ class Solver(object):
 			JS = JS/length
 			DC = DC/length
 			unet_score = JS + DC
-
 
 			f = open(os.path.join(self.result_path,'result.csv'), 'a', encoding='utf-8', newline='')
 			wr = csv.writer(f)

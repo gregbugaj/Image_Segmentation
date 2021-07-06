@@ -14,7 +14,12 @@ class ImageFolder(data.Dataset):
 		self.root = root
 		
 		# GT : Ground Truth
-		self.GT_paths = root[:-1]+'_GT/'
+		self.GT_paths = root[:-1]+'/mask/'
+		root = os.path.join(root, 'image')
+
+		print(f'GT : {self.root}')
+		print(f'GT : {self.GT_paths}')
+
 		self.image_paths = list(map(lambda x: os.path.join(root, x), os.listdir(root)))
 		self.image_size = image_size
 		self.mode = mode
@@ -25,11 +30,25 @@ class ImageFolder(data.Dataset):
 	def __getitem__(self, index):
 		"""Reads an image from a file and preprocesses it and returns."""
 		image_path = self.image_paths[index]
-		filename = image_path.split('_')[-1][:-len(".jpg")]
-		GT_path = self.GT_paths + 'ISIC_' + filename + '_segmentation.png'
 
-		image = Image.open(image_path)
-		GT = Image.open(GT_path)
+		# filename = image_path.split('_')[-1][:-len(".jpg")]
+		# filename = image_path.split('/')[-1][:-len(".jpg")]
+		filename = image_path.split('/')[-1].split('_')[0]
+
+		# NOTE: it is important that he GT is of shape(B,1,H,W), channel has to be 1otherisze we will get an shape error in solver
+		# GT : torch.Size([1, 1, 256, 256])
+		# SR : torch.Size([1, 1, 256, 256])
+		# GTF : torch.Size([1, 65536])
+		# SRF : torch.Size([1, 65536])
+
+		GT_path = self.GT_paths +  filename + '_B.jpg'
+		# GT_path = self.GT_paths +  filename + '.png'
+		image = Image.open(image_path).convert('RGB') 
+		GT = Image.open(GT_path).convert('L')
+
+		# print('IMAGE SHAPE')
+		# print(image.size)
+		# print(GT.size)
 
 		aspect_ratio = image.size[1]/image.size[0]
 
@@ -88,6 +107,9 @@ class ImageFolder(data.Dataset):
 		Norm_ = T.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
 		image = Norm_(image)
 
+		# print('-------------')
+		# print(image.size())
+		# print(GT.size())
 		return image, GT
 
 	def __len__(self):
