@@ -10,7 +10,7 @@ import torch.nn.functional as F
 from evaluation import *
 from network import U_Net,R2U_Net,AttU_Net,R2AttU_Net
 import csv
-
+from tqdm import tqdm
 
 class Solver(object):
 	def __init__(self, config, train_loader, valid_loader, test_loader):
@@ -55,20 +55,19 @@ class Solver(object):
 	def build_model(self):
 		"""Build generator and discriminator."""
 		if self.model_type =='U_Net':
-			self.unet = U_Net(img_ch=3,output_ch=1)
+			self.unet = U_Net(img_ch=self.img_ch,output_ch=1)
 		elif self.model_type =='R2U_Net':
-			self.unet = R2U_Net(img_ch=3,output_ch=1,t=self.t)
+			self.unet = R2U_Net(img_ch=self.img_ch,output_ch=1,t=self.t)
 		elif self.model_type =='AttU_Net':
-			self.unet = AttU_Net(img_ch=3,output_ch=1)
+			self.unet = AttU_Net(img_ch=self.img_ch,output_ch=1)
 		elif self.model_type == 'R2AttU_Net':
 			self.unet = R2AttU_Net(img_ch=3,output_ch=1,t=self.t)
 			
-
 		self.optimizer = optim.Adam(list(self.unet.parameters()),
 									  self.lr, [self.beta1, self.beta2])
 		self.unet.to(self.device)
 
-		# self.print_network(self.unet, self.model_type)
+		self.print_network(self.unet, self.model_type)
 
 	def print_network(self, model, name):
 		"""Print out the network information."""
@@ -137,7 +136,7 @@ class Solver(object):
 				DC = 0.		# Dice Coefficient
 				length = 0
 
-				for i, (images, GT) in enumerate(self.train_loader):
+				for i, (images, GT) in enumerate(tqdm(self.train_loader)):
 					# print('************ SIZE *************')
 					# print(images.size())
 					# GT : Ground Truth

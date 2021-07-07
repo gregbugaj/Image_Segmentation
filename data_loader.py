@@ -57,16 +57,18 @@ class ImageFolder(data.Dataset):
 		ResizeRange = random.randint(300,320)
 		Transform.append(T.Resize((int(ResizeRange*aspect_ratio),ResizeRange)))
 		p_transform = random.random()
-
+        
 		if (self.mode == 'train') and p_transform <= self.augmentation_prob:
-			RotationDegree = random.randint(0,3)
-			RotationDegree = self.RotationDegree[RotationDegree]
-			if (RotationDegree == 90) or (RotationDegree == 270):
-				aspect_ratio = 1/aspect_ratio
+			
+			if False:
+				RotationDegree = random.randint(0,3)
+				RotationDegree = self.RotationDegree[RotationDegree]
+				if (RotationDegree == 90) or (RotationDegree == 270):
+					aspect_ratio = 1/aspect_ratio
 
-			Transform.append(T.RandomRotation((RotationDegree,RotationDegree)))
-						
-			RotationRange = random.randint(-10,10)
+				Transform.append(T.RandomRotation((RotationDegree,RotationDegree)))
+							
+			RotationRange = random.randint(-2,2)
 			Transform.append(T.RandomRotation((RotationRange,RotationRange)))
 			CropRange = random.randint(250,270)
 			Transform.append(T.CenterCrop((int(CropRange*aspect_ratio),CropRange)))
@@ -82,11 +84,11 @@ class ImageFolder(data.Dataset):
 			image = image.crop(box=(ShiftRange_left,ShiftRange_upper,ShiftRange_right,ShiftRange_lower))
 			GT = GT.crop(box=(ShiftRange_left,ShiftRange_upper,ShiftRange_right,ShiftRange_lower))
 
-			if random.random() < 0.5:
+			if False and random.random() < 0.5:
 				image = F.hflip(image)
 				GT = F.hflip(GT)
 
-			if random.random() < 0.5:
+			if False and random.random() < 0.5:
 				image = F.vflip(image)
 				GT = F.vflip(GT)
 
@@ -114,7 +116,7 @@ class ImageFolder(data.Dataset):
 
 	def __len__(self):
 		"""Returns the total number of font files."""
-		return len(self.image_paths)
+		return len(self.image_paths)# // 4
 
 def get_loader(image_path, image_size, batch_size, num_workers=2, mode='train',augmentation_prob=0.4):
 	"""Builds and returns Dataloader."""
